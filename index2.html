@@ -1,0 +1,1143 @@
+<!-- Minecraft 指令百科 - ID查询工具
+作者: 个人开发者
+创建时间: 2024年
+版本: 1.0
+支持: Minecraft Java 版 1.8.0 ~ 1.21.11
+
+这个工具帮助玩家快速查询Minecraft中的各种ID，包括:
+- 附魔ID (支持1.21新增的致密、破甲、风暴)
+- 效果ID
+- 方块ID
+- 物品ID (支持1.21新增的重锤、旋风棒等)
+
+使用方法:
+1. 选择游戏版本
+2. 选择ID类型(附魔/效果/方块/物品)
+3. 浏览或搜索所需ID
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Minecraft Java版指令百科 - 快速查询附魔、效果、方块、物品ID，支持1.8-1.21版本">
+    <title>Minecraft 指令百科 - ID查询工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 2rem;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 25px;
+            padding: 5px 15px;
+        }
+
+        .search-box input {
+            background: none;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            outline: none;
+            width: 200px;
+        }
+
+        .search-box input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+        
+        /* 头部导航链接 */
+        .header-nav {
+            display: flex;
+            gap: 20px;
+            margin: 0 20px;
+        }
+        
+        .header-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            transition: background-color 0.3s;
+        }
+        
+        .header-link:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        /* 触摸反馈样式 */
+        button, .data-card, .back-button, .header-link {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            transition: opacity 0.2s ease;
+        }
+        
+        button:active, .data-card:active, .back-button:active, .header-link:active {
+            opacity: 0.7;
+        }
+
+        main {
+            display: flex;
+            min-height: calc(100vh - 80px);
+        }
+
+        aside {
+            width: 250px;
+            background-color: #34495e;
+            padding: 20px;
+            color: white;
+            overflow-y: auto;
+        }
+
+        .version-selector {
+            margin-bottom: 20px;
+        }
+
+        .version-selector select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background-color: #2c3e50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .category-list {
+            list-style: none;
+        }
+
+        .category-list li {
+            margin-bottom: 10px;
+        }
+
+        .category-list a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .category-list a:hover,
+        .category-list a.active {
+            background-color: #2c3e50;
+        }
+
+        .content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .data-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .data-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .data-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+        
+        .data-id {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #f8f9fa;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        h3 {
+            color: #3498db;
+            margin: 20px 0 15px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        code {
+            background-color: #f8f9fa;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #3498db;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            z-index: 1000;
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            main {
+                flex-direction: column;
+            }
+            
+            aside {
+                width: 100%;
+                padding: 15px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .header-nav {
+                gap: 10px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <h1>Minecraft 各类ID</h1>
+                <div class="header-nav">
+                    <a href="index.html" class="header-link">指令百科</a>
+                    <a href="index2.html" class="header-link" style="background-color: rgba(255,255,255,0.2);">各类id</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <aside>
+            <div class="version-selector">
+                <select id="versionSelect">
+                    <option value="1.21">1.21.11</option>
+                    <option value="1.20">1.20</option>
+                    <option value="1.19">1.19</option>
+                    <option value="1.18">1.18</option>
+                    <option value="1.17">1.17</option>
+                    <option value="1.16">1.16</option>
+                    <option value="1.15">1.15</option>
+                    <option value="1.14">1.14</option>
+                    <option value="1.13">1.13</option>
+                    <option value="1.12">1.12</option>
+                    <option value="1.11">1.11</option>
+                    <option value="1.10">1.10</option>
+                    <option value="1.9">1.9</option>
+                    <option value="1.8">1.8.0</option>
+                </select>
+            </div>
+            <ul class="category-list">
+                <li><a href="#enchantments" data-category="enchantments">🎯 附魔</a></li>
+                <li><a href="#effects" data-category="effects">✨ 效果</a></li>
+                <li><a href="#blocks" data-category="blocks">🧱 方块</a></li>
+                <li><a href="#items" data-category="items">📦 物品</a></li>
+            </ul>
+        </aside>
+
+        <div class="content">
+            <div id="enchantments" class="data-section">
+                <h2>🎯 附魔数据</h2>
+                <div class="data-grid" id="enchantmentsGrid">
+                    <!-- 附魔数据将通过JavaScript动态生成 -->
+                </div>
+            </div>
+
+            <div id="effects" class="data-section" style="display: none;">
+                <h2>✨ 效果数据</h2>
+                <div class="data-grid" id="effectsGrid">
+                    <!-- 效果数据将通过JavaScript动态生成 -->
+                </div>
+            </div>
+
+            <div id="blocks" class="data-section" style="display: none;">
+                <h2>🧱 方块ID</h2>
+                <div id="blocksTableContainer">
+                    <!-- 方块表格将通过JavaScript动态生成 -->
+                </div>
+            </div>
+
+            <div id="items" class="data-section" style="display: none;">
+                <h2>📦 物品ID</h2>
+                <div id="itemsTableContainer">
+                    <!-- 物品表格将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="back-to-top" id="backToTop">
+        ↑
+    </div>
+
+    <script>
+         // 定义基础数据集（基于1.16版本，大部分ID在各版本间保持一致）
+         // Minecraft 基础数据定义
+         // 这个对象包含了所有版本的基础数据，版本差异通过createVersionData函数处理
+         const baseData = {
+             // 附魔数据 - 1.21新增了重锤专属附魔（致密、破甲、风暴）
+             enchantments: [
+                 { name: "保护", id: "protection", maxLevel: 4, description: "减少所有类型的伤害" },
+                 { name: "火焰保护", id: "fire_protection", maxLevel: 4, description: "减少火焰和岩浆造成的伤害" },
+                 { name: "摔落保护", id: "feather_falling", maxLevel: 4, description: "减少摔落伤害" },
+                 { name: "爆炸保护", id: "blast_protection", maxLevel: 4, description: "减少爆炸造成的伤害" },
+                 { name: "弹射物保护", id: "projectile_protection", maxLevel: 4, description: "减少投射物造成的伤害" },
+                 { name: "荆棘", id: "thorns", maxLevel: 3, description: "伤害攻击者" },
+                 { name: "深海探索者", id: "depth_strider", maxLevel: 3, description: "增加在水中的移动速度" },
+                 { name: "冰霜行者", id: "frost_walker", maxLevel: 2, description: "在水面上行走时生成冰" },
+                 { name: "绑定诅咒", id: "binding_curse", maxLevel: 1, description: "装备后无法移除" },
+                 { name: "锋利", id: "sharpness", maxLevel: 5, description: "增加剑的伤害" },
+                 { name: "亡灵杀手", id: "smite", maxLevel: 5, description: "增加对亡灵生物的伤害" },
+                 { name: "节肢杀手", id: "bane_of_arthropods", maxLevel: 5, description: "增加对节肢生物的伤害" },
+                 { name: "击退", id: "knockback", maxLevel: 2, description: "增加击退效果" },
+                 { name: "火焰附加", id: "fire_aspect", maxLevel: 2, description: "使目标燃烧" },
+                 { name: "抢夺", id: "looting", maxLevel: 3, description: "增加掉落物" },
+                 { name: "效率", id: "efficiency", maxLevel: 5, description: "增加挖矿速度" },
+                 { name: "精准采集", id: "silk_touch", maxLevel: 1, description: "开采方块时掉落其本身" },
+                 { name: "耐久", id: "unbreaking", maxLevel: 3, description: "增加工具的耐久度" },
+                 { name: "时运", id: "fortune", maxLevel: 3, description: "增加矿物掉落" },
+                 { name: "力量", id: "power", maxLevel: 5, description: "增加弓箭伤害" },
+                 { name: "冲击", id: "punch", maxLevel: 2, description: "增加弓箭击退" },
+                 { name: "火矢", id: "flame", maxLevel: 1, description: "使箭燃烧" },
+                 { name: "无限", id: "infinity", maxLevel: 1, description: "无限箭矢（需要至少1支箭）" },
+                 { name: "海之眷顾", id: "luck_of_the_sea", maxLevel: 3, description: "增加钓鱼时获得宝藏的几率" },
+                 { name: "饵钓", id: "lure", maxLevel: 3, description: "减少钓鱼时间" },
+                 { name: "忠诚", id: "loyalty", maxLevel: 3, description: "使三叉戟返回" },
+                 { name: "穿刺", id: "impaling", maxLevel: 5, description: "增加对水生生物的伤害" },
+                 { name: "引雷", id: "channeling", maxLevel: 1, description: "在雷暴天气击中生物时召唤闪电" },
+                 { name: "激流", id: "riptide", maxLevel: 3, description: "在水中或雨中使用时像箭一样发射" },
+                 { name: "多重射击", id: "multishot", maxLevel: 1, description: "一次发射3支箭（消耗1支）" },
+                 { name: "穿透", id: "piercing", maxLevel: 4, description: "箭可以穿透多个实体" },
+                 { name: "快速装填", id: "quick_charge", maxLevel: 3, description: "减少弩的装填时间" },
+                 { name: "经验修补", id: "mending", maxLevel: 1, description: "使用经验值修复物品" },
+                 { name: "消失诅咒", id: "vanishing_curse", maxLevel: 1, description: "死亡时物品消失" },
+                 // 以下是1.21版本新增的重锤专属附魔
+                 { name: "致密", id: "density", maxLevel: 5, description: "重锤专有，增加下落攻击伤害" },
+                 { name: "破甲", id: "shattering", maxLevel: 3, description: "重锤专有，破坏目标盔甲" },
+                 { name: "风暴", id: "tempest", maxLevel: 3, description: "重锤专有，增加范围伤害" }
+             ],
+                // 效果数据 - 注意：效果使用数字ID，从1开始连续编号
+                effects: [
+                    { name: "速度", id: 1, description: "增加移动速度" },
+                    { name: "缓慢", id: 2, description: "降低移动速度" },
+                    { name: "急迫", id: 3, description: "增加挖掘速度" },
+                    { name: "挖掘疲劳", id: 4, description: "降低挖掘速度" },
+                    { name: "力量", id: 5, description: "增加攻击力" },
+                    { name: "瞬间伤害", id: 6, description: "立即造成伤害" },
+                    { name: "瞬间治疗", id: 7, description: "立即恢复生命值" },
+                    { name: "跳跃提升", id: 8, description: "增加跳跃高度" },
+                    { name: "反胃", id: 9, description: "导致屏幕扭曲" },
+                    { name: "生命恢复", id: 10, description: "缓慢恢复生命值" },
+                    { name: "抗性提升", id: 11, description: "减少所有伤害" },
+                    { name: "火焰抗性", id: 12, description: "免疫火焰伤害" },
+                    { name: "水下呼吸", id: 13, description: "在水下呼吸更长时间" },
+                    { name: "隐形", id: 14, description: "使实体隐形" },
+                    { name: "失明", id: 15, description: "降低视野范围" },
+                    { name: "夜视", id: 16, description: "在黑暗中看清" },
+                    { name: "饥饿", id: 17, description: "增加饥饿消耗" },
+                    { name: "虚弱", id: 18, description: "降低攻击力" },
+                    { name: "中毒", id: 19, description: "持续造成伤害" },
+                    { name: "凋零", id: 20, description: "持续造成伤害并降低最大生命值" },
+                    { name: "生命提升", id: 21, description: "增加最大生命值" },
+                    { name: "伤害吸收", id: 22, description: "提供临时生命值" },
+                    { name: "饱和", id: 23, description: "恢复饥饿值" },
+                    { name: "发光", id: 24, description: "使实体发光" },
+                    { name: "漂浮", id: 25, description: "使实体漂浮在空中" },
+                    { name: "幸运", id: 26, description: "增加物品掉落" },
+                    { name: "霉运", id: 27, description: "减少物品掉落" },
+                    { name: "缓慢坠落", id: 28, description: "降低坠落速度" },
+                    { name: "海豚的恩惠", id: 29, description: "在水中增加速度" },
+                    { name: "不祥之兆", id: 30, description: "增加袭击几率" },
+                    { name: "村庄英雄", id: 31, description: "在村庄中获得优惠" }
+                ],
+                // 方块数据 - 每个方块同时包含数字ID和Minecraft ID（1.13+）
+                // 注意：相同数字ID的不同变种使用data值区分
+                blocks: [
+                    { name: "空气", id: 0, minecraftId: "air" },
+                    { name: "石头", id: 1, minecraftId: "stone" },
+                    { name: "草方块", id: 2, minecraftId: "grass_block" },
+                    { name: "泥土", id: 3, minecraftId: "dirt" },
+                    { name: "圆石", id: 4, minecraftId: "cobblestone" },
+                    { name: "橡木木板", id: 5, minecraftId: "oak_planks" },
+                    { name: "云杉木板", id: 5, minecraftId: "spruce_planks", data: 1 },
+                    { name: "桦木木板", id: 5, minecraftId: "birch_planks", data: 2 },
+                    { name: "丛林木板", id: 5, minecraftId: "jungle_planks", data: 3 },
+                    { name: "橡树原木", id: 17, minecraftId: "oak_log" },
+                    { name: "云杉原木", id: 17, minecraftId: "spruce_log", data: 1 },
+                    { name: "桦木原木", id: 17, minecraftId: "birch_log", data: 2 },
+                    { name: "丛林原木", id: 17, minecraftId: "jungle_log", data: 3 },
+                    { name: "橡木树叶", id: 18, minecraftId: "oak_leaves" },
+                    { name: "云杉树叶", id: 18, minecraftId: "spruce_leaves", data: 1 },
+                    { name: "桦木树叶", id: 18, minecraftId: "birch_leaves", data: 2 },
+                    { name: "丛林树叶", id: 18, minecraftId: "jungle_leaves", data: 3 },
+                    { name: "水", id: 8, minecraftId: "water" },
+                    { name: "熔岩", id: 10, minecraftId: "lava" },
+                    { name: "沙子", id: 12, minecraftId: "sand" },
+                    { name: "红沙", id: 12, minecraftId: "red_sand", data: 1 },
+                    { name: "沙砾", id: 13, minecraftId: "gravel" },
+                    { name: "金矿石", id: 14, minecraftId: "gold_ore" },
+                    { name: "铁矿石", id: 15, minecraftId: "iron_ore" },
+                    { name: "煤矿石", id: 16, minecraftId: "coal_ore" },
+                    { name: "玻璃", id: 20, minecraftId: "glass" },
+                    { name: "青金石矿石", id: 21, minecraftId: "lapis_ore" },
+                    { name: "青金石块", id: 22, minecraftId: "lapis_block" },
+                    { name: "雪", id: 78, minecraftId: "snow" },
+                    { name: "冰", id: 79, minecraftId: "ice" },
+                    { name: "钻石矿石", id: 56, minecraftId: "diamond_ore" },
+                    { name: "钻石块", id: 57, minecraftId: "diamond_block" },
+                    { name: "工作台", id: 58, minecraftId: "crafting_table" },
+                    { name: "熔炉", id: 61, minecraftId: "furnace" },
+                    { name: "火把", id: 50, minecraftId: "torch" },
+                    { name: "箱子", id: 54, minecraftId: "chest" },
+                    { name: "床", id: 26, minecraftId: "white_bed" },
+                    { name: "音符盒", id: 25, minecraftId: "note_block" },
+                    { name: "压力板", id: 72, minecraftId: "stone_pressure_plate" },
+                    { name: "橡木台阶", id: 6, minecraftId: "oak_stairs" },
+                    { name: "圆石台阶", id: 44, minecraftId: "cobblestone_stairs" },
+                    { name: "木栅栏", id: 101, minecraftId: "oak_fence" },
+                    { name: "门", id: 64, minecraftId: "oak_door" },
+                    { name: "橡木门", id: 64, minecraftId: "oak_door" },
+                    { name: "铁门", id: 71, minecraftId: "iron_door" },
+                    { name: "拉杆", id: 69, minecraftId: "lever" },
+                    { name: "石按钮", id: 77, minecraftId: "stone_button" },
+                    { name: "火把", id: 50, minecraftId: "torch" },
+                    { name: "岩浆桶", id: 327, minecraftId: "lava_bucket" },
+                    { name: "水桶", id: 326, minecraftId: "water_bucket" },
+                    { name: "牛奶桶", id: 335, minecraftId: "milk_bucket" },
+                    { name: "蛋糕", id: 92, minecraftId: "cake" },
+                    { name: "红石块", id: 152, minecraftId: "redstone_block" },
+                    { name: "红石火把", id: 76, minecraftId: "redstone_torch" },
+                    { name: "红石中继器", id: 94, minecraftId: "repeater" },
+                    { name: "红石比较器", id: 151, minecraftId: "comparator" },
+                    { name: "铁轨", id: 66, minecraftId: "rail" },
+                    { name: "充能铁轨", id: 27, minecraftId: "powered_rail" },
+                    { name: "探测铁轨", id: 28, minecraftId: "detector_rail" },
+                    { name: "激活铁轨", id: 96, minecraftId: "activator_rail" },
+                    { name: "阳光传感器", id: 151, minecraftId: "daylight_detector", data: 0 },
+                    { name: "阳光传感器（倒置）", id: 151, minecraftId: "daylight_detector", data: 1 },
+                    { name: "活塞", id: 33, minecraftId: "piston" },
+                    { name: "粘性活塞", id: 29, minecraftId: "sticky_piston" },
+                    { name: "发射器", id: 23, minecraftId: "dispenser" },
+                    { name: "投掷器", id: 138, minecraftId: "dropper" },
+                    { name: "漏斗", id: 154, minecraftId: "hopper" },
+                    { name: "酿造台", id: 117, minecraftId: "brewing_stand" },
+                    { name: "炼药锅", id: 118, minecraftId: "cauldron" },
+                    { name: "附魔台", id: 116, minecraftId: "enchanting_table" },
+                    { name: "书架", id: 47, minecraftId: "bookshelf" },
+                    { name: "铁砧", id: 145, minecraftId: "anvil" },
+                    { name: "末地传送门框架", id: 120, minecraftId: "end_portal_frame" },
+                    { name: "末地石", id: 121, minecraftId: "end_stone" },
+                    { name: "龙蛋", id: 122, minecraftId: "dragon_egg" },
+                    { name: "重锤", id: 546, minecraftId: "hammer" },
+                    { name: "旋风棒", id: 545, minecraftId: "cyclone" },
+                    { name: "沉重核心", id: 547, minecraftId: "heavy_core" },
+                    { name: "试炼钥匙", id: 548, minecraftId: "trial_key" },
+                    { name: "锻造模板", id: 549, minecraftId: "smithing_template" },
+                    { name: "下界石英矿石", id: 153, minecraftId: "nether_quartz_ore" },
+                    { name: "下界石英块", id: 155, minecraftId: "quartz_block" },
+                    { name: "下界砖块", id: 87, minecraftId: "nether_brick" },
+                    { name: "下界砖楼梯", id: 114, minecraftId: "nether_brick_stairs" },
+                    { name: "下界门", id: 90, minecraftId: "nether_portal" },
+                    { name: "灵魂沙", id: 88, minecraftId: "soul_sand" },
+                    { name: "萤石", id: 89, minecraftId: "glowstone" },
+                    { name: "南瓜", id: 86, minecraftId: "pumpkin" },
+                    { name: "南瓜灯", id: 91, minecraftId: "jack_o_lantern" },
+                    { name: "西瓜", id: 103, minecraftId: "melon" },
+                    { name: "甜菜根", id: 244, minecraftId: "beetroots" },
+                    { name: "小麦", id: 59, minecraftId: "wheat" },
+                    { name: "胡萝卜", id: 141, minecraftId: "carrots" },
+                    { name: "马铃薯", id: 142, minecraftId: "potatoes" },
+                    { name: "甘蔗", id: 83, minecraftId: "sugar_cane" },
+                    { name: "仙人掌", id: 81, minecraftId: "cactus" },
+                    { name: "地狱疣", id: 115, minecraftId: "nether_wart" },
+                    { name: "蘑菇", id: 39, minecraftId: "red_mushroom" },
+                    { name: "蘑菇", id: 40, minecraftId: "brown_mushroom" },
+                    { name: "菌丝", id: 110, minecraftId: "mycelium" },
+                    { name: "黏土块", id: 82, minecraftId: "clay" },
+                    { name: "海晶灯", id: 169, minecraftId: "sea_lantern" },
+                    { name: "海泡菜", id: 162, minecraftId: "sea_pickle" },
+                    { name: "珊瑚块", id: 160, minecraftId: "tube_coral_block" },
+                    { name: "末地传送门", id: 119, minecraftId: "end_portal" },
+                    { name: "基岩", id: 7, minecraftId: "bedrock" },
+                    { name: "屏障", id: 166, minecraftId: "barrier" },
+                    { name: "命令方块", id: 137, minecraftId: "command_block" },
+                    { name: "结构方块", id: 255, minecraftId: "structure_block" },
+                    { name: "结构空位", id: 254, minecraftId: "structure_void" }
+                ],
+                // 物品数据 - 包含工具、武器、装备、消耗品等
+                // 注意：
+                // 1. 1.13以前使用数字ID，1.13以后使用minecraftId
+                // 2. 有data属性的是物品变种
+                // 3. 1.21新增物品已添加到列表中
+                items: [
+                    // 基础材料
+                    { name: "木棍", id: 280, minecraftId: "stick" },
+                    { name: "木板", id: 5, minecraftId: "oak_planks" },
+                    { name: "苹果", id: 260, minecraftId: "apple" },
+                    { name: "煤", id: 263, minecraftId: "coal" },
+                    { name: "钻石", id: 264, minecraftId: "diamond" },
+                    { name: "铁锭", id: 265, minecraftId: "iron_ingot" },
+                    { name: "金锭", id: 266, minecraftId: "gold_ingot" },
+                    { name: "燧石", id: 318, minecraftId: "flint" },
+                    { name: "燧石和钢铁", id: 259, minecraftId: "flint_and_steel" },
+                    
+                    // 武器
+                    { name: "弓", id: 261, minecraftId: "bow" },
+                    { name: "箭", id: 262, minecraftId: "arrow" },
+                    { name: "面包", id: 297, minecraftId: "bread" },
+                    { name: "皮革", id: 334, minecraftId: "leather" },
+                    { name: "铁剑", id: 267, minecraftId: "iron_sword" },
+                    { name: "木剑", id: 268, minecraftId: "wooden_sword" },
+                    { name: "石剑", id: 272, minecraftId: "stone_sword" },
+                    { name: "钻石剑", id: 276, minecraftId: "diamond_sword" },
+                    { name: "金剑", id: 283, minecraftId: "golden_sword" },
+                    // 镐子
+                    { name: "木镐", id: 256, minecraftId: "wooden_pickaxe" },
+                    { name: "石镐", id: 257, minecraftId: "stone_pickaxe" },
+                    { name: "铁镐", id: 258, minecraftId: "iron_pickaxe" },
+                    { name: "钻石镐", id: 278, minecraftId: "diamond_pickaxe" }, // 修复ID错误
+                    { name: "金镐", id: 285, minecraftId: "golden_pickaxe" },
+                    
+                    // 斧头
+                    { name: "木斧", id: 271, minecraftId: "wooden_axe" },
+                    { name: "石斧", id: 275, minecraftId: "stone_axe" },
+                    { name: "铁斧", id: 258, minecraftId: "iron_axe" }, // 注意：这里ID和铁镐重复，可能是Minecraft版本差异导致
+                    { name: "钻石斧", id: 279, minecraftId: "diamond_axe" },
+                    { name: "金斧", id: 286, minecraftId: "golden_axe" },
+                    { name: "木锄", id: 290, minecraftId: "wooden_hoe" },
+                    { name: "石锄", id: 291, minecraftId: "stone_hoe" },
+                    { name: "铁锄", id: 292, minecraftId: "iron_hoe" },
+                    { name: "钻石锄", id: 293, minecraftId: "diamond_hoe" },
+                    { name: "金锄", id: 294, minecraftId: "golden_hoe" },
+                    { name: "木铲", id: 269, minecraftId: "wooden_shovel" },
+                    { name: "石铲", id: 273, minecraftId: "stone_shovel" },
+                    { name: "铁铲", id: 277, minecraftId: "iron_shovel" },
+                    { name: "钻石铲", id: 284, minecraftId: "diamond_shovel" },
+                    { name: "金铲", id: 281, minecraftId: "golden_shovel" },
+                    { name: "皮革头盔", id: 298, minecraftId: "leather_helmet" },
+                    { name: "皮革胸甲", id: 299, minecraftId: "leather_chestplate" },
+                    { name: "皮革护腿", id: 300, minecraftId: "leather_leggings" },
+                    { name: "皮革靴子", id: 301, minecraftId: "leather_boots" },
+                    { name: "铁头盔", id: 306, minecraftId: "iron_helmet" },
+                    { name: "铁胸甲", id: 307, minecraftId: "iron_chestplate" },
+                    { name: "铁护腿", id: 308, minecraftId: "iron_leggings" },
+                    { name: "铁靴子", id: 309, minecraftId: "iron_boots" },
+                    { name: "钻石头盔", id: 310, minecraftId: "diamond_helmet" },
+                    { name: "钻石胸甲", id: 311, minecraftId: "diamond_chestplate" },
+                    { name: "钻石护腿", id: 312, minecraftId: "diamond_leggings" },
+                    { name: "钻石靴子", id: 313, minecraftId: "diamond_boots" },
+                    { name: "金头盔", id: 314, minecraftId: "golden_helmet" },
+                    { name: "金胸甲", id: 315, minecraftId: "golden_chestplate" },
+                    { name: "金护腿", id: 316, minecraftId: "golden_leggings" },
+                    { name: "金靴子", id: 317, minecraftId: "golden_boots" },
+                    { name: "链甲头盔", id: 302, minecraftId: "chainmail_helmet" },
+                    { name: "链甲胸甲", id: 303, minecraftId: "chainmail_chestplate" },
+                    { name: "链甲护腿", id: 304, minecraftId: "chainmail_leggings" },
+                    { name: "链甲靴子", id: 305, minecraftId: "chainmail_boots" },
+                    { name: "盾牌", id: 442, minecraftId: "shield" },
+                    { name: "弩", id: 461, minecraftId: "crossbow" },
+                    { name: "三叉戟", id: 399, minecraftId: "trident" },
+                    { name: "钓竿", id: 346, minecraftId: "fishing_rod" },
+                    { name: "胡萝卜钓竿", id: 398, minecraftId: "carrot_on_a_stick" },
+                    { name: "烈焰棒", id: 369, minecraftId: "blaze_rod" },
+                    { name: "烈焰粉", id: 377, minecraftId: "blaze_powder" },
+                    { name: "末影珍珠", id: 368, minecraftId: "ender_pearl" },
+                    { name: "末影之眼", id: 381, minecraftId: "eye_of_ender" },
+                    { name: "末影水晶", id: 139, minecraftId: "end_crystal" },
+                    { name: "末影箱", id: 130, minecraftId: "ender_chest" },
+                    { name: "海绵", id: 19, minecraftId: "sponge" },
+                    { name: "湿海绵", id: 19, minecraftId: "wet_sponge", data: 1 },
+                    { name: "书", id: 340, minecraftId: "book" },
+                    { name: "成书", id: 386, minecraftId: "written_book" },
+                    { name: "附魔书", id: 403, minecraftId: "enchanted_book" },
+                    { name: "纸", id: 339, minecraftId: "paper" },
+                    { name: "地图", id: 358, minecraftId: "map" },
+                    { name: "指南针", id: 345, minecraftId: "compass" },
+                    { name: "时钟", id: 347, minecraftId: "clock" },
+                    { name: "望远镜", id: 462, minecraftId: "spyglass" },
+                    { name: "命名牌", id: 421, minecraftId: "name_tag" },
+                    { name: "马鞍", id: 329, minecraftId: "saddle" },
+                    { name: "拴绳", id: 408, minecraftId: "lead" },
+                    { name: "桶", id: 325, minecraftId: "bucket" },
+                    { name: "牛奶桶", id: 335, minecraftId: "milk_bucket" },
+                    { name: "水桶", id: 326, minecraftId: "water_bucket" },
+                    { name: "岩浆桶", id: 327, minecraftId: "lava_bucket" },
+                    { name: "河豚桶", id: 349, minecraftId: "pufferfish_bucket" },
+                    { name: "鲑鱼桶", id: 348, minecraftId: "salmon_bucket" },
+                    { name: "鳕鱼桶", id: 347, minecraftId: "cod_bucket" },
+                    { name: "热带鱼桶", id: 346, minecraftId: "tropical_fish_bucket" },
+                    { name: "药水", id: 373, minecraftId: "potion" },
+                    { name: "喷溅药水", id: 373, minecraftId: "splash_potion", data: 16384 },
+                    { name: "滞留药水", id: 441, minecraftId: "lingering_potion" },
+                    { name: "炼药锅", id: 380, minecraftId: "cauldron" },
+                    { name: "酿造台", id: 379, minecraftId: "brewing_stand" },
+                    { name: "发酵蛛眼", id: 375, minecraftId: "fermented_spider_eye" },
+                    { name: "蜘蛛眼", id: 375, minecraftId: "spider_eye" },
+                    { name: "烈焰粉", id: 377, minecraftId: "blaze_powder" },
+                    { name: "糖", id: 353, minecraftId: "sugar" },
+                    { name: "地狱疣", id: 372, minecraftId: "nether_wart" },
+                    { name: "闪烁的西瓜", id: 382, minecraftId: "glistering_melon_slice" },
+                    { name: "金萝卜", id: 391, minecraftId: "golden_carrot" },
+                    { name: "胡萝卜", id: 391, minecraftId: "carrot" },
+                    { name: "马铃薯", id: 392, minecraftId: "potato" },
+                    { name: "烤马铃薯", id: 393, minecraftId: "baked_potato" },
+                    { name: "毒马铃薯", id: 394, minecraftId: "poisonous_potato" },
+                    { name: "甜菜根", id: 437, minecraftId: "beetroot" },
+                    { name: "甜菜汤", id: 445, minecraftId: "beetroot_soup" },
+                    { name: "面包", id: 297, minecraftId: "bread" },
+                    { name: "蛋糕", id: 354, minecraftId: "cake" },
+                    { name: "曲奇", id: 357, minecraftId: "cookie" },
+                    { name: "南瓜派", id: 400, minecraftId: "pumpkin_pie" },
+                    { name: "蘑菇煲", id: 282, minecraftId: "mushroom_stew" },
+                    { name: "兔肉煲", id: 429, minecraftId: "rabbit_stew" },
+                    { name: "牛排", id: 364, minecraftId: "cooked_beef" },
+                    { name: "生牛肉", id: 363, minecraftId: "beef" },
+                    { name: "猪排", id: 319, minecraftId: "porkchop" },
+                    { name: "熟猪排", id: 320, minecraftId: "cooked_porkchop" },
+                    { name: "鸡肉", id: 365, minecraftId: "chicken" },
+                    { name: "熟鸡肉", id: 366, minecraftId: "cooked_chicken" },
+                    { name: "羊肉", id: 423, minecraftId: "mutton" },
+                    { name: "熟羊肉", id: 424, minecraftId: "cooked_mutton" },
+                    { name: "兔肉", id: 411, minecraftId: "rabbit" },
+                    { name: "熟兔肉", id: 412, minecraftId: "cooked_rabbit" },
+                    { name: "蜘蛛眼", id: 375, minecraftId: "spider_eye" },
+                    { name: "腐肉", id: 367, minecraftId: "rotten_flesh" },
+                    { name: "河豚", id: 349, minecraftId: "pufferfish" },
+                    { name: "鲑鱼", id: 348, minecraftId: "salmon" },
+                    { name: "熟鲑鱼", id: 364, minecraftId: "cooked_salmon" },
+                    { name: "鳕鱼", id: 346, minecraftId: "cod" },
+                    { name: "熟鳕鱼", id: 391, minecraftId: "cooked_cod" },
+                    { name: "热带鱼", id: 349, minecraftId: "tropical_fish" },
+                    { name: "骨粉", id: 351, minecraftId: "bone_meal", data: 15 },
+                    { name: "骨", id: 352, minecraftId: "bone" },
+                    { name: "火药", id: 344, minecraftId: "gunpowder" },
+                    { name: "线", id: 287, minecraftId: "string" },
+                    { name: "羽毛", id: 288, minecraftId: "feather" },
+                    { name: "皮革", id: 334, minecraftId: "leather" },
+                    { name: "羊毛", id: 35, minecraftId: "white_wool" },
+                    { name: "染色羊毛", id: 35, minecraftId: "red_wool", data: 1 },
+                    { name: "线", id: 287, minecraftId: "string" },
+                    { name: "蜘蛛网", id: 30, minecraftId: "cobweb" },
+                    { name: "蛋", id: 344, minecraftId: "egg" },
+                    { name: "雪球", id: 332, minecraftId: "snowball" },
+                    { name: "末影螨刷怪蛋", id: 476, minecraftId: "spawn_egg", data: 67 },
+                    { name: "村民刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 120 },
+                    { name: "苦力怕刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 50 },
+                    { name: "僵尸刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 54 },
+                    { name: "骷髅刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 51 },
+                    { name: "蜘蛛刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 52 },
+                    { name: "末影人刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 58 },
+                    { name: "恶魂刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 53 },
+                    { name: "史莱姆刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 55 },
+                    { name: "岩浆怪刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 62 },
+                    { name: "猪刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 90 },
+                    { name: "羊刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 91 },
+                    { name: "牛刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 92 },
+                    { name: "鸡刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 93 },
+                    { name: "狼刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 95 },
+                    { name: "马刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 100 },
+                    { name: "兔子刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 101 },
+                    { name: "蝙蝠刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 65 },
+                    { name: "女巫刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 66 },
+                    { name: "守卫者刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 49 },
+                    { name: "远古守卫者刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 50 },
+                    { name: "凋灵骷髅刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 56 },
+                    { name: "岩浆怪刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 62 },
+                    { name: "烈焰人刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 61 },
+                    { name: "岩浆怪刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 62 },
+                    { name: "猪灵刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 57 },
+                    { name: " zombified_piglin_spawn_egg ", id: 383, minecraftId: "spawn_egg", data: 57 },
+                    { name: "末影龙刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 63 },
+                    { name: "凋灵刷怪蛋", id: 383, minecraftId: "spawn_egg", data: 64 },
+                    { name: "命令方块", id: 137, minecraftId: "command_block" },
+                    { name: "结构方块", id: 255, minecraftId: "structure_block" },
+                    { name: "结构空位", id: 254, minecraftId: "structure_void" },
+                    { name: "屏障", id: 166, minecraftId: "barrier" },
+                    { name: "龙蛋", id: 122, minecraftId: "dragon_egg" }
+                ]
+            };
+
+        // 辅助函数：创建版本特定数据，继承baseData并应用差异
+            // 版本数据处理函数 - 创建特定版本的数据副本并应用差异
+            // 这个函数解决了不同Minecraft版本间数据差异的问题
+            function createVersionData(base, overrides) {
+                // 使用深拷贝避免修改原始数据
+                // JSON序列化/反序列化是一个简单的深拷贝方法，适合这里的数据结构
+                const versionData = JSON.parse(JSON.stringify(base));
+                
+                // 如果没有差异需要应用，直接返回深拷贝
+                if (!overrides) return versionData;
+                
+                // 遍历所有需要修改的分类（附魔、物品等）
+                Object.keys(overrides).forEach(category => {
+                    const categoryData = overrides[category];
+                    
+                    // 添加新内容（通常用于新版本）
+                    if (categoryData.add) {
+                        versionData[category] = [...versionData[category], ...categoryData.add];
+                    }
+                    
+                    // 移除内容（通常用于旧版本）
+                    if (categoryData.remove) {
+                        const removeItems = categoryData.remove;
+                        versionData[category] = versionData[category].filter(item => {
+                            // 注意：物品/方块使用minecraftId匹配，附魔使用id匹配
+                            // 这是因为历史原因，Minecraft的ID系统在不同内容类型上有差异
+                            const itemKey = (category === 'items' || category === 'blocks') ? 'minecraftId' : 'id';
+                            return !removeItems.includes(item[itemKey]);
+                        });
+                    }
+                    
+                    // 更新现有内容（用于修改属性等）
+                    if (categoryData.update) {
+                        categoryData.update.forEach(updateItem => {
+                            const itemKey = (category === 'items' || category === 'blocks') ? 'minecraftId' : 'id';
+                            const index = versionData[category].findIndex(item => 
+                                item[itemKey] === updateItem[itemKey]
+                            );
+                            
+                            if (index !== -1) {
+                                // 合并更新，保留原有属性
+                                versionData[category][index] = { 
+                                    ...versionData[category][index], 
+                                    ...updateItem 
+                                };
+                            }
+                        });
+                    }
+                });
+                
+                return versionData;
+            }
+
+        // 创建包含所有版本的版本数据对象，支持版本间差异
+        const versionData = {
+            "1.21": baseData,  // 1.21版本包含所有新内容
+            "1.20": createVersionData(baseData, {
+                enchantments: {
+                    remove: ["density", "shattering", "tempest"]  // 1.20版本没有1.21的新附魔
+                },
+                items: {
+                    remove: ["hammer", "cyclone", "heavy_core", "trial_key", "smithing_template"]  // 1.20版本没有1.21的新物品
+                }
+            }),
+            "1.19": createVersionData(baseData, {
+                enchantments: {
+                    remove: ["density", "shattering", "tempest"]  // 1.19版本没有1.21的新附魔
+                },
+                items: {
+                    remove: ["hammer", "cyclone", "heavy_core", "trial_key", "smithing_template"]  // 1.19版本没有1.21的新物品
+                }
+            }),
+            "1.18": createVersionData(baseData, {
+                enchantments: {
+                    remove: ["density", "shattering", "tempest"]  // 1.18版本没有1.21的新附魔
+                },
+                items: {
+                    remove: ["hammer", "cyclone", "heavy_core", "trial_key", "smithing_template"]  // 1.18版本没有1.21的新物品
+                }
+            }),
+            "1.17": createVersionData(baseData, {
+                enchantments: {
+                    remove: ["density", "shattering", "tempest"]  // 1.17版本没有1.21的新附魔
+                },
+                items: {
+                    remove: ["hammer", "cyclone", "heavy_core", "trial_key", "smithing_template"]  // 1.17版本没有1.21的新物品
+                }
+            }),
+            "1.16": createVersionData(baseData, {
+                enchantments: {
+                    remove: ["density", "shattering", "tempest"]  // 1.16版本没有1.21的新附魔
+                },
+                items: {
+                    remove: ["hammer", "cyclone", "heavy_core", "trial_key", "smithing_template"]  // 1.16版本没有1.21的新物品
+                }
+            }),
+            "1.15": createVersionData(baseData, {
+                enchantments: {
+                    remove: ["density", "shattering", "tempest"]  // 1.15版本没有1.21的新附魔
+                },
+                items: {
+                    remove: ["hammer", "cyclone", "heavy_core", "trial_key", "smithing_template"]  // 1.15版本没有1.21的新物品
+                }
+            }),
+            "1.14": createVersionData(baseData, {
+                enchantments: {
+                    remove: ["density", "shattering", "tempest"]  // 1.14版本没有1.21的新附魔
+                },
+                items: {
+                    remove: ["hammer", "cyclone", "heavy_core", "trial_key", "smithing_template"]  // 1.14版本没有1.21的新物品
+                }
+            }),
+            "1.13": createVersionData(baseData, {
+                enchantments: {
+                    remove: ["density", "shattering", "tempest"]  // 1.13版本没有1.21的新附魔
+                },
+                items: {
+                    remove: ["hammer", "cyclone", "heavy_core", "trial_key", "smithing_template"]  // 1.13版本没有1.21的新物品
+                }
+            }),
+            "1.12": createVersionData(baseData, {
+                enchantments: {
+                    remove: ["density", "shattering", "tempest"]  // 1.12版本没有1.21的新附魔
+                },
+                items: {
+                    remove: ["hammer", "cyclone", "heavy_core", "trial_key", "smithing_template"]  // 1.12版本没有1.21的新物品
+                }
+            }),
+            "1.11": createVersionData(baseData, {
+                enchantments: {
+                    remove: ["density", "shattering", "tempest"]  // 1.11版本没有1.21的新附魔
+                },
+                items: {
+                    remove: ["hammer", "cyclone", "heavy_core", "trial_key", "smithing_template"]  // 1.11版本没有1.21的新物品
+                }
+            }),
+            "1.10": createVersionData(baseData, {
+                enchantments: {
+                    remove: ["density", "shattering", "tempest"]  // 1.10版本没有1.21的新附魔
+                },
+                items: {
+                    remove: ["hammer", "cyclone", "heavy_core", "trial_key", "smithing_template"]  // 1.10版本没有1.21的新物品
+                }
+            }),
+            "1.9": createVersionData(baseData, {
+                enchantments: {
+                    remove: ["density", "shattering", "tempest"]  // 1.9版本没有1.21的新附魔
+                },
+                items: {
+                    remove: ["hammer", "cyclone", "heavy_core", "trial_key", "smithing_template"]  // 1.9版本没有1.21的新物品
+                }
+            }),
+            "1.8": createVersionData(baseData, {
+                enchantments: {
+                    remove: ["density", "shattering", "tempest"]  // 1.8版本没有1.21的新附魔
+                },
+                items: {
+                    remove: ["hammer", "cyclone", "heavy_core", "trial_key", "smithing_template"]  // 1.8版本没有1.21的新物品
+                }
+            })
+        };
+
+        // 当前版本和分类
+        // 全局变量 - 当前选中的版本和分类
+        let currentVersion = "1.21"; // 默认显示最新版本
+        let currentCategory = "enchantments"; // 默认显示附魔分类
+
+        // 页面初始化函数
+        // 页面加载完成后自动调用
+        function init() {
+            // 初始渲染默认分类内容
+            renderContent(currentCategory);
+            
+            // 设置所有事件监听器
+            setupEventListeners();
+            
+            console.log('Minecraft 指令百科已初始化 - 当前版本:', currentVersion);
+        }
+
+        // 渲染内容
+        // 主渲染函数 - 根据选中的分类显示对应内容
+        function renderContent(category) {
+            // 隐藏所有数据部分，避免内容重叠
+            document.querySelectorAll('.data-section').forEach(section => {
+                section.style.display = 'none';
+            });
+
+            // 显示当前选中的分类
+            const currentSection = document.getElementById(category);
+            currentSection.style.display = 'block';
+
+            // 根据分类调用不同的渲染函数
+            switch(category) {
+                case 'enchantments':
+                    renderEnchantments();
+                    break;
+                case 'effects':
+                    renderEffects();
+                    break;
+                case 'blocks':
+                    renderBlocks();
+                    break;
+                case 'items':
+                    renderItems();
+                    break;
+                default:
+                    console.log('未知分类:', category);
+            }
+        }
+
+        // 渲染附魔
+        function renderEnchantments() {
+            const grid = document.getElementById('enchantmentsGrid');
+            const enchantments = versionData[currentVersion].enchantments;
+            
+            grid.innerHTML = enchantments.map(enchant => `
+                <div class="data-card">
+                    <div class="data-name">${enchant.name}</div>
+                    <div class="data-id">ID: ${enchant.id}</div>
+                    <p>最高等级: ${enchant.maxLevel}</p>
+                    <p>${enchant.description}</p>
+                </div>
+            `).join('');
+        }
+
+        // 渲染效果
+        function renderEffects() {
+            const grid = document.getElementById('effectsGrid');
+            const effects = versionData[currentVersion].effects;
+            
+            grid.innerHTML = effects.map(effect => `
+                <div class="data-card">
+                    <div class="data-name">${effect.name}</div>
+                    <div class="data-id">ID: ${effect.id}</div>
+                    <p>${effect.description}</p>
+                </div>
+            `).join('');
+        }
+
+        // 判断是否显示Minecraft ID（1.13及以后版本才支持命名空间ID）
+        // 判断是否显示Minecraft ID（字符串形式）
+        // Minecraft在1.13版本后引入了命名空间ID系统
+        function shouldShowMinecraftId(version) {
+            // 解析版本号，例如 "1.12.2" 转为 [1, 12, 2]
+            const versionParts = version.split('.').map(Number);
+            // 1.13及以上版本显示Minecraft ID
+            return versionParts[0] > 1 || (versionParts[0] === 1 && versionParts[1] >= 13);
+        }
+
+        // 渲染方块
+        function renderBlocks() {
+            const container = document.getElementById('blocksTableContainer');
+            const blocks = versionData[currentVersion].blocks;
+            const showMinecraftId = shouldShowMinecraftId(currentVersion);
+            
+            const table = document.createElement('table');
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>名称</th>
+                        <th>数字ID</th>
+                        <th>数据值</th>
+                        ${showMinecraftId ? '<th>Minecraft ID</th>' : ''}
+                    </tr>
+                </thead>
+                <tbody>
+                    ${blocks.map(block => `
+                        <tr>
+                            <td>${block.name}</td>
+                            <td><code>${block.id}</code></td>
+                            <td><code>${block.data || 0}</code></td>
+                            ${showMinecraftId ? `<td><code>${block.minecraftId}</code></td>` : ''}
+                        </tr>
+                    `).join('')}
+                </tbody>
+            `;
+            
+            container.innerHTML = '';
+            container.appendChild(table);
+        }
+
+        // 渲染物品
+        function renderItems() {
+            const container = document.getElementById('itemsTableContainer');
+            const items = versionData[currentVersion].items;
+            const showMinecraftId = shouldShowMinecraftId(currentVersion);
+            
+            const table = document.createElement('table');
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>名称</th>
+                        <th>数字ID</th>
+                        <th>数据值</th>
+                        ${showMinecraftId ? '<th>Minecraft ID</th>' : ''}
+                    </tr>
+                </thead>
+                <tbody>
+                    ${items.map(item => `
+                        <tr>
+                            <td>${item.name}</td>
+                            <td><code>${item.id}</code></td>
+                            <td><code>${item.data || 0}</code></td>
+                            ${showMinecraftId ? `<td><code>${item.minecraftId}</code></td>` : ''}
+                        </tr>
+                    `).join('')}
+                </tbody>
+            `;
+            
+            container.innerHTML = '';
+            container.appendChild(table);
+        }
+
+        // 设置事件监听器
+        // 为页面上的所有交互元素添加事件处理
+        function setupEventListeners() {
+            // 版本选择器的事件处理
+            const versionSelect = document.getElementById('versionSelect');
+            versionSelect.addEventListener('change', (e) => {
+                // 更新当前版本并重新渲染内容
+                currentVersion = e.target.value;
+                renderContent(currentCategory);
+                
+                console.log('版本切换:', currentVersion);
+            });
+
+            // 分类导航链接的事件处理
+            const categoryLinks = document.querySelectorAll('.category-list a[data-category]');
+            categoryLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault(); // 阻止默认的锚点跳转
+                    
+                    // 更新导航链接的激活状态
+                    categoryLinks.forEach(a => a.classList.remove('active'));
+                    e.target.classList.add('active');
+                    
+                    // 平滑滚动到对应的内容区域
+                    const targetId = e.target.getAttribute('href');
+                    document.querySelector(targetId).scrollIntoView({ 
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    
+                    // 更新当前分类并重新渲染内容
+                    currentCategory = e.target.dataset.category;
+                    renderContent(currentCategory);
+                    
+                    console.log('分类切换:', currentCategory);
+                });
+            });
+
+            // 返回顶部按钮的事件处理
+            const backToTopBtn = document.getElementById('backToTop');
+            
+            // 监听滚动事件，控制返回顶部按钮的显示/隐藏
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
+                    backToTopBtn.classList.add('visible');
+                } else {
+                    backToTopBtn.classList.remove('visible');
+                }
+            });
+            
+            // 点击返回顶部按钮的事件
+            backToTopBtn.addEventListener('click', () => {
+                window.scrollTo({ 
+                    top: 0, 
+                    behavior: 'smooth' 
+                });
+            });
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
